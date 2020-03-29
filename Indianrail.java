@@ -83,4 +83,74 @@ public class Indianrail{
         station.passengerSeatedCondition.signalAll();
         station.lock.unlock();
     }
+    public static void main(String[] args) throws InterruptedException, IOException {
+        Lock lock = new ReentrantLock();
+        Condition passengerSeatedCondition = lock.newCondition();
+        Station s = new Station(lock,passengerSeatedCondition);
+        Scanner scanner = new Scanner(System.in);
+        try {
+        	System.out.println(" __________INDIAN RAIL__________");
+        	System.out.println("|                                                                         |");
+        	System.out.print("|\tENTER THE NUMBER OF PASSENGERS AT THE STATION : ");
+        	totalNumberOfPassenger = scanner.nextInt();
+        	System.out.println("|_________________________|");
+        	if(totalNumberOfPassenger<0) {
+        		throw new NegativeArraySizeException();
+        	}
+        }
+        catch(NegativeArraySizeException e) {
+        	System.out.println("Error : value entered is not feasible as passengers cannot be negative");
+        	System.exit(1);
+        }
+        int i = 1;
+        System.out.println();
+        while (noOfFreeSeatsInTheTrain != -1) {
+            int totalPassengers = totalNumberOfPassenger;
+
+            System.out.printf(" ___________ TRAIN %d ____________\n",i);
+            System.out.println("|                                                                         |");
+            System.out.println("|\tTHE NO OF WAITING PASSENGERS AT THE STATION : "+ (totalPassengers-s.totalBoarderPassengers));
+            try{
+                System.out.print("|\tENTER TOTAL NUMBER OF FREE SEATS IN THIS TRAIN : ");
+                noOfFreeSeatsInTheTrain = scanner.nextInt();
+                if(noOfFreeSeatsInTheTrain<0){
+                    throw new Exception();
+                }
+               }
+            catch(Exception e){
+                System.out.println("              Error : free seats cannot be negative");
+                System.exit(1);
+            } 
+            if (noOfFreeSeatsInTheTrain == 0) {
+                System.out.printf("|\tTOTAL PASSENGERS BOARDED : %d\n", s.totalBoarderPassengers);
+                System.out.printf("|\tPASSENGERS LEFT IN THE STATION : %d\n",(totalPassengers - s.totalBoarderPassengers));
+                System.out.println("|_________________________|");
+                break;
+            
+            }
+            Passenger[] thread = new Passenger[totalNumberOfPassenger];
+            for (int j = 0; j <totalPassengers ; j++) {
+                thread[j] = new Passenger(s);
+                thread[j].start();
+            }
+            System.out.printf("|\tTRAIN ARRIVING AT THE STATION WITH %d FREE SEATS\n", noOfFreeSeatsInTheTrain);
+            Train newTrain = new Train(s);
+            newTrain.start();
+            station_load_train(s,noOfFreeSeatsInTheTrain);
+            station_on_board(s);
+            System.out.printf("|\tTOTAL PASSENGERS BOARDED : %d\n", s.totalBoarderPassengers);
+            System.out.printf("|\tPASSENGERS LEFT IN THE STATION : %d\n",totalPassengers - s.totalBoarderPassengers);
+            System.out.println("|_________________________|");
+            i++;
+            s.passengersAtTheStation = totalPassengers - s.totalBoarderPassengers;
+            s.passengersInTrain = 0;
+            System.out.println();
+            if (totalPassengers-s.totalBoarderPassengers == 0) {
+                System.out.println("ALL PASSENGERS BOARDED");
+                System.exit(0);
+            }
+        }
+    }
+}
+
 
